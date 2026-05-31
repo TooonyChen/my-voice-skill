@@ -1,0 +1,58 @@
+{
+  "weflow": {
+    "version": "1.0.0"
+  },
+  "session": {
+    "wxid": "wxid_session_friend",
+    "nickname": "Session Friend",
+    "remark": "",
+    "displayName": "Session Friend",
+    "type": "私聊",
+    "lastTimestamp": 1738717200,
+    "messageCount": 3
+  },
+  "messages": [
+    {
+      "localId": 201,
+      "createTime": 1738717000,
+      "formattedTime": "2025-02-05 00:30:00",
+      "type": "文本消息",
+      "localType": 1,
+      "content": "晚点见",
+      "isSend": true,
+      "senderUsername": "wxid_me",
+      "senderDisplayName": "Me",
+      "source": "private",
+      "senderAvatarKey": "",
+      "platformMessageId": "session_001"
+    },
+    {
+      "localId": 202,
+      "createTime": 1738717060,
+      "formattedTime": "2025-02-05 00:31:00",
+      "type": "文本消息",
+      "localType": 1,
+      "content": "好",
+      "isSend": false,
+      "senderUsername": "wxid_session_friend",
+      "senderDisplayName": "Session Friend",
+      "source": "private",
+      "senderAvatarKey": "",
+      "platformMessageId": "session_002"
+    },
+    {
+      "localId": 203,
+      "createTime": 1738717120,
+      "formattedTime": "2025-02-05 00:32:00",
+      "type": "语音消息",
+      "localType": 34,
+      "content": "[语音]",
+      "isSend": false,
+      "senderUsername": "wxid_session_friend",
+      "senderDisplayName": "Session Friend",
+      "source": "private",
+      "senderAvatarKey": "",
+      "platformMessageId": "session_003"
+    }
+  ]
+}

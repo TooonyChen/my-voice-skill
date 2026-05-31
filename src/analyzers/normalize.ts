@@ -1,4 +1,5 @@
 import type { Message } from "../types/message.ts";
+import type { GroupMessage } from "../types/group.ts";
 import type { CustomPattern } from "../types/config.ts";
 
 export interface RedactionRules {
@@ -50,6 +51,16 @@ export function normalize(
   messages: Message[],
   rules: RedactionRules,
 ): Message[] {
+  return messages.map((m) => {
+    if (m.text === null) return m;
+    return { ...m, text: redactText(m.text, rules) };
+  });
+}
+
+export function normalizeGroupMessages(
+  messages: GroupMessage[],
+  rules: RedactionRules,
+): GroupMessage[] {
   return messages.map((m) => {
     if (m.text === null) return m;
     return { ...m, text: redactText(m.text, rules) };

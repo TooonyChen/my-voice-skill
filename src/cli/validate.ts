@@ -8,11 +8,16 @@ import {
 import { ClassifiedContactSchema } from "../types/contact.ts";
 import { SkillConfigSchema } from "../types/config.ts";
 import { GlobalStatsSchema, PerContactStatsSchema } from "../types/stats.ts";
+import {
+  GroupContextBundleSchema,
+  GroupRelationshipSignalSchema,
+  GroupToneStatsSchema,
+} from "../types/group.ts";
 import { die, parseArgs } from "./util.ts";
 
 const USAGE = `usage: bun run src/cli/validate.ts <schema> <path>
 
-schemas: persona_findings | memory_findings | classified_contacts | config | global_stats | per_contact_stats
+schemas: persona_findings | memory_findings | classified_contacts | config | global_stats | per_contact_stats | group_tone_stats | group_relationship_signals | group_contexts
 
 Exits 0 on success and prints "ok: <schema>". Exits 1 with a JSON-formatted list of errors on failure.`;
 
@@ -23,6 +28,9 @@ const SCHEMAS: Record<string, z.ZodTypeAny> = {
   config: SkillConfigSchema,
   global_stats: GlobalStatsSchema,
   per_contact_stats: z.array(PerContactStatsSchema),
+  group_tone_stats: GroupToneStatsSchema,
+  group_relationship_signals: z.array(GroupRelationshipSignalSchema),
+  group_contexts: GroupContextBundleSchema,
 };
 
 async function main() {

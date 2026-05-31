@@ -8,6 +8,7 @@ targets:
   stats       — checks exports/stats.json and exports/per_contact_stats.json exist and are at least as new as exports/normalized/messages.jsonl.
   classified  — checks exports/contacts_classified.json exists and is at least as new as exports/stats.json.
   messages    — checks exports/normalized/messages.jsonl exists.
+  groups      — checks group side-channel artifacts exist and are at least as new as exports/normalized/group_messages.jsonl.
 
 exit codes:
   0 — fresh
@@ -86,6 +87,31 @@ async function checkMessages() {
   process.stdout.write("fresh: messages\n");
 }
 
+async function checkGroups() {
+  const msgs = await getMtime("exports/normalized/group_messages.jsonl");
+  if (!msgs.exists) {
+    fail("exports/normalized/group_messages.jsonl missing — run /parse-groups first");
+  }
+  const tone = await getMtime("exports/group_tone_stats.json");
+  if (!tone.exists) {
+    fail("exports/group_tone_stats.json missing — run /group-stats first");
+  }
+  const signals = await getMtime("exports/group_relationship_signals.json");
+  if (!signals.exists) {
+    fail("exports/group_relationship_signals.json missing — run /group-signals first");
+  }
+  const contexts = await getMtime("exports/group_contexts.json");
+  if (!contexts.exists) {
+    fail("exports/group_contexts.json missing — run /group-context first");
+  }
+  for (const artifact of [tone, signals, contexts]) {
+    if (artifact.mtimeMs < msgs.mtimeMs) {
+      fail(`${artifact.path} is older than group_messages.jsonl — re-run group side-channel commands`);
+    }
+  }
+  process.stdout.write("fresh: groups\n");
+}
+
 async function main() {
   const { positional } = parseArgs(process.argv.slice(2));
   if (positional.length < 1) die(USAGE);
@@ -97,8 +123,10 @@ async function main() {
       return checkClassified();
     case "messages":
       return checkMessages();
+    case "groups":
+      return checkGroups();
     default:
-      die(`unknown target "${target}". valid: stats | classified | messages`);
+      die(`unknown target "${target}". valid: stats | classified | messages | groups`);
   }
 }
 

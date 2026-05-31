@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, extname, join } from "node:path";
 import { z } from "zod";
 import type { MediaType, Message } from "../types/message.ts";
+import type { GroupMessage } from "../types/group.ts";
 
 const StringOrNumber = z.union([z.string(), z.number()]);
 
@@ -52,6 +53,7 @@ const RawWeFlowMessageSchema = z
     createTime: StringOrNumber,
     isSend: z.union([z.number(), z.boolean(), z.string()]).optional(),
     senderUsername: StringOrNumber.optional(),
+    senderDisplayName: z.string().optional(),
     content: z.unknown().nullable().optional(),
     rawContent: z.unknown().nullable().optional(),
     parsedContent: z.unknown().nullable().optional(),
@@ -60,8 +62,19 @@ const RawWeFlowMessageSchema = z
   })
   .passthrough();
 
+const RawWeFlowSessionSchema = z
+  .object({
+    wxid: StringOrNumber.optional(),
+    nickname: z.string().optional(),
+    remark: z.string().optional(),
+    displayName: z.string().optional(),
+    type: z.string().optional(),
+  })
+  .passthrough();
+
 const RawWeFlowExportSchema = z
   .object({
+    session: RawWeFlowSessionSchema.optional(),
     talker: StringOrNumber.optional(),
     displayName: z.string().optional(),
     sessionName: z.string().optional(),
@@ -213,6 +226,29 @@ function isRawFromMe(value: unknown): boolean {
   return value === 1 || value === true || value === "1" || value === "true";
 }
 
+function rawSender(
+  raw: z.infer<typeof RawWeFlowMessageSchema>,
+  myKeys: Set<string>,
+): Message["sender"] {
+  if (raw.isSend !== undefined) {
+    return isRawFromMe(raw.isSend) ? "me" : "them";
+  }
+  return isMeIdentity(
+    {
+      id: asString(raw.senderUsername),
+      accountName: raw.senderDisplayName,
+    },
+    undefined,
+    myKeys,
+  )
+    ? "me"
+    : "them";
+}
+
+function groupSender(sender: Message["sender"]): GroupMessage["sender"] {
+  return sender === "me" ? "me" : "participant";
+}
+
 async function collectJsonFiles(root: string): Promise<string[]> {
   const s = await stat(root);
   if (s.isFile()) {
@@ -351,17 +387,94 @@ function parseChatLabFile(
   return messages;
 }
 
+function parseChatLabGroupFile(
+  json: unknown,
+  filePath: string,
+  myKeys: Set<string>,
+): GroupMessage[] | null {
+  const result = ChatLabExportSchema.safeParse(json);
+  if (!result.success) return null;
+
+  const data = result.data;
+  if (data.meta.platform && data.meta.platform !== "wechat") {
+    throw new Error(
+      `${filePath}: expected ChatLab meta.platform "wechat", got "${data.meta.platform}"`,
+    );
+  }
+  if (data.meta.type !== "group") return [];
+
+  const ownerId = asString(data.meta.ownerId);
+  const groupId = asString(data.meta.groupId) ?? stem(filePath);
+  const groupName = data.meta.name ?? groupId;
+
+  const memberById = new Map<string, z.infer<typeof ChatLabMemberSchema>>();
+  for (const member of data.members) {
+    const id = asString(member.platformId);
+    if (id) memberById.set(id, member);
+  }
+
+  const timestampByMessageId = new Map<string, Date>();
+  for (const raw of data.messages) {
+    const id = asString(raw.platformMessageId);
+    if (id) timestampByMessageId.set(id, dateFromEpoch(raw.timestamp));
+  }
+
+  const messages: GroupMessage[] = [];
+  for (const raw of data.messages) {
+    if (shouldSkipChatLabType(raw.type)) continue;
+
+    const senderId = asString(raw.sender) ?? "unknown";
+    const member = memberById.get(senderId);
+    const sender = isMeIdentity(
+      {
+        id: senderId,
+        accountName: raw.accountName ?? member?.accountName,
+        groupNickname: raw.groupNickname ?? member?.groupNickname,
+      },
+      ownerId,
+      myKeys,
+    )
+      ? "me"
+      : "participant";
+    const media_type = chatLabMediaType(raw.type);
+    const text = isChatLabTextType(raw.type) ? contentToText(raw.content) : null;
+    if (media_type === "unknown" && text === null) continue;
+
+    const replyTo = asString(raw.replyToMessageId);
+    const participantName =
+      raw.groupNickname ??
+      member?.groupNickname ??
+      raw.accountName ??
+      member?.accountName ??
+      senderId;
+    messages.push({
+      group_id: groupId,
+      group_name: groupName,
+      platform: "wechat",
+      timestamp: dateFromEpoch(raw.timestamp),
+      sender,
+      participant_id: senderId,
+      participant_name: participantName,
+      text,
+      media_type,
+      reply_to_timestamp: replyTo ? (timestampByMessageId.get(replyTo) ?? null) : null,
+    });
+  }
+  return messages;
+}
+
 function parseRawWeFlowFile(
   json: unknown,
   filePath: string,
+  myKeys: Set<string>,
   opts: ParseWeFlowOptions,
 ): Message[] | null {
   const result = RawWeFlowExportSchema.safeParse(json);
   if (!result.success) return null;
 
   const data = result.data;
-  const talker = asString(data.talker) ?? stem(filePath);
-  const isGroup = talker.endsWith("@chatroom");
+  const talker = asString(data.talker) ?? asString(data.session?.wxid) ?? stem(filePath);
+  const isGroup = data.session?.type === "群聊" || talker.endsWith("@chatroom");
   if (isGroup && !opts.includeGroups) return [];
 
   const timestampByMessageId = new Map<string, Date>();
@@ -370,7 +483,13 @@ function parseRawWeFlowFile(
     if (id) timestampByMessageId.set(id, dateFromEpoch(raw.createTime));
   }
 
-  const contactName = data.displayName ?? data.sessionName ?? talker;
+  const contactName =
+    data.displayName ??
+    data.sessionName ??
+    data.session?.displayName ??
+    data.session?.remark ??
+    data.session?.nickname ??
+    talker;
   const messages: Message[] = [];
   for (const raw of data.messages) {
     if (shouldSkipRawMessage(raw)) continue;
@@ -386,11 +505,68 @@ function parseRawWeFlowFile(
       contact_id: talker,
       contact_name: contactName,
       timestamp: dateFromEpoch(raw.createTime),
-      sender: isRawFromMe(raw.isSend) ? "me" : "them",
+      sender: rawSender(raw, myKeys),
       text,
       media_type,
       reply_to_timestamp: replyTo ? (timestampByMessageId.get(replyTo) ?? null) : null,
       platform: "wechat",
+    });
+  }
+  return messages;
+}
+
+function parseRawWeFlowGroupFile(
+  json: unknown,
+  filePath: string,
+  myKeys: Set<string>,
+): GroupMessage[] | null {
+  const result = RawWeFlowExportSchema.safeParse(json);
+  if (!result.success) return null;
+
+  const data = result.data;
+  const groupId = asString(data.talker) ?? asString(data.session?.wxid) ?? stem(filePath);
+  const isGroup = data.session?.type === "群聊" || groupId.endsWith("@chatroom");
+  if (!isGroup) return [];
+
+  const groupName =
+    data.displayName ??
+    data.sessionName ??
+    data.session?.displayName ??
+    data.session?.remark ??
+    data.session?.nickname ??
+    groupId;
+
+  const timestampByMessageId = new Map<string, Date>();
+  for (const raw of data.messages) {
+    const id = asString(raw.serverId) ?? asString(raw.localId);
+    if (id) timestampByMessageId.set(id, dateFromEpoch(raw.createTime));
+  }
+
+  const messages: GroupMessage[] = [];
+  for (const raw of data.messages) {
+    if (shouldSkipRawMessage(raw)) continue;
+
+    const media_type = rawMediaType(raw);
+    const text = isRawTextMessage(raw)
+      ? firstText(raw.parsedContent, raw.content, raw.rawContent)
+      : null;
+    if (media_type === "unknown" && text === null) continue;
+
+    const sender = rawSender(raw, myKeys);
+    const participantId = asString(raw.senderUsername) ?? (sender === "me" ? "me" : "unknown");
+    const participantName = raw.senderDisplayName ?? participantId;
+    const replyTo = asString(raw.replyToMessageId);
+    messages.push({
+      group_id: groupId,
+      group_name: groupName,
+      platform: "wechat",
+      timestamp: dateFromEpoch(raw.createTime),
+      sender: groupSender(sender),
+      participant_id: participantId,
+      participant_name: participantName,
+      text,
+      media_type,
+      reply_to_timestamp: replyTo ? (timestampByMessageId.get(replyTo) ?? null) : null,
     });
   }
   return messages;
@@ -414,7 +590,7 @@ export async function parseWeFlowExport(
     const json = JSON.parse(raw);
     const parsed =
       parseChatLabFile(json, file, myKeys, opts) ??
-      parseRawWeFlowFile(json, file, opts);
+      parseRawWeFlowFile(json, file, myKeys, opts);
     if (!parsed) {
       throw new Error(
         `${file}: unsupported WeFlow JSON. Expected ChatLab JSON or saved /api/v1/messages JSON.`,
@@ -426,6 +602,41 @@ export async function parseWeFlowExport(
   all.sort((a, b) => {
     if (a.contact_id !== b.contact_id) {
       return a.contact_id.localeCompare(b.contact_id);
+    }
+    return a.timestamp.getTime() - b.timestamp.getTime();
+  });
+  return all;
+}
+
+export async function parseWeFlowGroupExport(
+  exportPath: string,
+  myName: string,
+  myAliases: string[] = [],
+): Promise<GroupMessage[]> {
+  const files = await collectJsonFiles(exportPath);
+  if (files.length === 0) {
+    throw new Error(`No .json files found under ${exportPath}`);
+  }
+
+  const myKeys = buildMyKeys(myName, myAliases);
+  const all: GroupMessage[] = [];
+  for (const file of files) {
+    const raw = await readFile(file, "utf-8");
+    const json = JSON.parse(raw);
+    const parsed =
+      parseChatLabGroupFile(json, file, myKeys) ??
+      parseRawWeFlowGroupFile(json, file, myKeys);
+    if (!parsed) {
+      throw new Error(
+        `${file}: unsupported WeFlow JSON. Expected ChatLab JSON or saved /api/v1/messages JSON.`,
+      );
+    }
+    all.push(...parsed);
+  }
+
+  all.sort((a, b) => {
+    if (a.group_id !== b.group_id) {
+      return a.group_id.localeCompare(b.group_id);
     }
     return a.timestamp.getTime() - b.timestamp.getTime();
   });

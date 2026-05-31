@@ -9,8 +9,12 @@
     "test": "bun test",
     "typecheck": "tsc --noEmit",
     "parse": "bun run src/cli/parse.ts",
+    "parse-groups": "bun run src/cli/parse_groups.ts",
     "stats": "bun run src/cli/stats.ts",
-    "filter": "bun run src/cli/filter.ts"
+    "filter": "bun run src/cli/filter.ts",
+    "group-stats": "bun run src/cli/group_stats.ts",
+    "group-signals": "bun run src/cli/group_signals.ts",
+    "group-context": "bun run src/cli/group_context.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",

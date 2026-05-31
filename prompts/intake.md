@@ -10,7 +10,7 @@ Ask: "Which platform export are we starting with? Messenger, Instagram, or WeCha
 
 - Supported platforms are `messenger`, `instagram`, and `wechat`.
 - `messenger` and `instagram` parse Meta "Download Your Information" JSON exports.
-- `wechat` parses static JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON is also accepted. This skill does not fetch WeFlow's API itself during `/parse`.
+- `wechat` parses static JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON and WeFlow's `{ session, messages }` text export JSON are also accepted. This skill does not fetch WeFlow's API itself during `/parse`.
 - If the user has multiple platforms, run the pipeline on one platform at a time.
 - Save as `platform: "messenger" | "instagram" | "wechat"`.
 
@@ -20,12 +20,13 @@ Ask for the path to the unzipped Meta export or WeFlow JSON.
 
 - Validate: the path must exist and contain (recursively) at least one inbox directory. Messenger exports use `inbox/`, `messages/inbox/`, or `your_facebook_activity/messages/inbox/`; Instagram exports use `your_instagram_activity/messages/inbox/` (and often `.../message_requests/`).
 - For `wechat`, ask for a WeFlow JSON file or a directory containing WeFlow JSON files. Prefer ChatLab JSON. Group chats are skipped by default because the memory model is per contact; only use `--include-groups` later if the user explicitly wants groups imported as conversation-level contacts.
+- If the user wants group chats, keep them in the group side channel: `/parse-groups`, `/group-stats`, `/group-signals`, and `/group-context`. Do not merge them into `messages.jsonl` unless the user explicitly wants groups treated as conversation-level contacts.
 - If not found, ask the user to re-check. Common gotcha: Meta sometimes splits exports across multiple parts.
 - Save as `export_path` (absolute, resolved).
 
 ## Step 3 — confirm "me"
 
-Ask the user for their display name on the platform (the `sender_name` Meta uses). Then verify:
+Ask the user for their display name on the platform (the `sender_name` Meta uses). For WeFlow JSON with `isSend`, this can be left blank. Then verify:
 
 - Run `bun run src/cli/parse.ts <platform> <export_path> --me "<name>" --out /tmp/intake_check.jsonl 2>&1` (use the platform chosen in Step 1).
 - Read the first few lines and report the breakdown of distinct `sender_name`s found, plus how many messages each contributed.

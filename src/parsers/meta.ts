@@ -6,6 +6,7 @@ import {
   type MediaType,
   type Platform,
 } from "../types/message.ts";
+import type { GroupMessage } from "../types/group.ts";
 
 /**
  * Shared parser for Meta "Download Your Information" JSON exports. Messenger and
@@ -91,6 +92,12 @@ export interface ParsedThread {
   contactId: string;
 }
 
+export interface ParsedGroupThread {
+  messages: GroupMessage[];
+  groupName: string;
+  groupId: string;
+}
+
 export function parseThreadJson(json: unknown, opts: ParseOptions): ParsedThread {
   const thread = RawMetaThread.parse(json);
   const platform: Platform = opts.platform ?? "messenger";
@@ -129,6 +136,64 @@ export function parseThreadJson(json: unknown, opts: ParseOptions): ParsedThread
 
   messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   return { messages, contactName, contactId };
+}
+
+function slugId(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") || "unknown";
+}
+
+export function parseGroupThreadJson(
+  json: unknown,
+  opts: ParseOptions,
+): ParsedGroupThread {
+  const thread = RawMetaThread.parse(json);
+  const platform: Platform = opts.platform ?? "messenger";
+  const myNames = new Set(
+    [opts.myName, ...(opts.myAliases ?? [])].map(fixMojibake),
+  );
+
+  const fixedParticipants = thread.participants.map((p) => fixMojibake(p.name));
+  if (fixedParticipants.length <= 2) {
+    return {
+      messages: [],
+      groupName: thread.title ? fixMojibake(thread.title) : "unknown",
+      groupId: opts.contactIdOverride ?? "unknown",
+    };
+  }
+
+  const groupName =
+    (thread.title ? fixMojibake(thread.title) : null) ??
+    opts.contactIdOverride ??
+    fixedParticipants.filter((n) => !myNames.has(n)).slice(0, 3).join(", ");
+  const groupId =
+    opts.contactIdOverride ??
+    thread.thread_path?.split("/").pop() ??
+    slugId(groupName);
+
+  const messages: GroupMessage[] = [];
+  for (const raw of thread.messages) {
+    if (raw.is_unsent) continue;
+    if (isThreadEvent(raw.type)) continue;
+    const senderName = fixMojibake(raw.sender_name);
+    const text = raw.content ? fixMojibake(raw.content) : null;
+    const media_type = classifyMediaType(raw);
+    if (media_type === "unknown" && !text) continue;
+    messages.push({
+      group_id: groupId,
+      group_name: groupName,
+      platform,
+      timestamp: new Date(raw.timestamp_ms),
+      sender: myNames.has(senderName) ? "me" : "participant",
+      participant_id: slugId(senderName),
+      participant_name: senderName,
+      text,
+      media_type,
+      reply_to_timestamp: null,
+    });
+  }
+
+  messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  return { messages, groupName, groupId };
 }
 
 /**
@@ -214,6 +279,53 @@ export async function parseMetaExport(
   all.sort((a, b) => {
     if (a.contact_id !== b.contact_id) {
       return a.contact_id.localeCompare(b.contact_id);
+    }
+    return a.timestamp.getTime() - b.timestamp.getTime();
+  });
+  return all;
+}
+
+export async function parseMetaGroupExport(
+  exportRoot: string,
+  myName: string,
+  myAliases: string[],
+  config: MetaExportConfig,
+): Promise<GroupMessage[]> {
+  const inboxDirs = await collectInboxDirs(exportRoot, config.inboxCandidates);
+  if (inboxDirs.length === 0) {
+    throw new Error(
+      `Could not find an inbox directory for ${config.platform} under ${exportRoot} (looked for: ${config.inboxCandidates.join(", ")})`,
+    );
+  }
+
+  const all: GroupMessage[] = [];
+  for (const inboxPath of inboxDirs) {
+    const threadDirs = await readdir(inboxPath);
+    for (const dir of threadDirs) {
+      const dirPath = join(inboxPath, dir);
+      const dirStat = await stat(dirPath).catch(() => null);
+      if (!dirStat?.isDirectory()) continue;
+
+      const files = await readdir(dirPath);
+      const jsonFiles = files
+        .filter((f) => f.startsWith("message_") && f.endsWith(".json"))
+        .sort();
+      for (const f of jsonFiles) {
+        const content = await readFile(join(dirPath, f), "utf-8");
+        const parsed = parseGroupThreadJson(JSON.parse(content), {
+          myName,
+          myAliases,
+          contactIdOverride: dir,
+          platform: config.platform,
+        });
+        all.push(...parsed.messages);
+      }
+    }
+  }
+
+  all.sort((a, b) => {
+    if (a.group_id !== b.group_id) {
+      return a.group_id.localeCompare(b.group_id);
     }
     return a.timestamp.getTime() - b.timestamp.getTime();
   });

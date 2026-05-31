@@ -18,9 +18,14 @@ bun install
 bun test                                              
 # once you have a Meta export or static WeFlow JSON at <path>:
 bun run src/cli/parse.ts messenger <path> --me "Your Name"
-bun run src/cli/parse.ts wechat <path> --me "Your WeChat Name"
+bun run src/cli/parse.ts wechat <path>
 bun run src/cli/stats.ts
 bun run src/cli/filter.ts                             # default ≥100 total, ≥50 each way
+# optional group-chat side channel:
+bun run src/cli/parse_groups.ts wechat <path>
+bun run src/cli/group_stats.ts
+bun run src/cli/group_signals.ts
+bun run src/cli/group_context.ts
 # then in Claude Code with this skill loaded:
 #   /classify-contacts
 #   /generate-tone
@@ -37,8 +42,8 @@ prompts/             8 LLM instruction files (intake, classifier, persona, memor
 src/
   types/             Zod schemas (Message, ContactStats, GlobalStats, findings)
   parsers/           meta.ts (shared Meta JSON base), Messenger, Instagram, WeFlow/ChatLab JSON
-  analyzers/         tokenize (jieba), normalize (PII redaction), filter_contacts, stats, sampling
-  cli/               parse, stats, filter, sample, validate, check_freshness, redact
+  analyzers/         tokenize (jieba), normalize, filter_contacts, stats, sampling, group side-channel
+  cli/               parse, parse_groups, stats, group_stats, group_signals, group_context, sample, validate
 docs/                tone.md and person/*.md schemas
 memory/
   agent.template.md  Generic template for runtime escalation rules; committed
@@ -59,6 +64,8 @@ exports/             Gitignored. Raw exports, normalized JSONL, stats, samples.
 
 ## WeChat via WeFlow
 
-WeChat support is a static import path for JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON is also accepted. Media payloads are not imported. Non-text media messages are retained only as message-type events with `text: null`, so they can count toward activity without entering LLM text samples.
+WeChat support is a static import path for JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON and WeFlow's `{ session, messages }` text export JSON are also accepted. Media payloads are not imported. Non-text media messages are retained only as message-type events with `text: null`, so they can count toward activity without entering LLM text samples.
 
-Group chats are skipped by default because the memory model is per contact. Pass `--include-groups` only if you intentionally want each group to be imported as one conversation-level contact.
+For WeFlow JSON with `isSend`, `--me` is optional. If `isSend` is absent, pass `--me` and any `--aliases` needed so the parser can identify the user's side.
+
+Group chats are a separate side channel. Use `parse_groups.ts` to write `exports/normalized/group_messages.jsonl`; then `group_stats.ts`, `group_signals.ts`, and `group_context.ts` create deterministic inputs that can enhance public/group register, weak relationship classification signals, and shared context. Do not merge raw group chats directly into per-contact private memory.

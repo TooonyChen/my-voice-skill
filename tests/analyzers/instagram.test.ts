@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from "bun:test";
 import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseThreadJson } from "../../src/parsers/meta.ts";
+import { parseGroupThreadJson, parseThreadJson } from "../../src/parsers/meta.ts";
 import { parseInstagramExport } from "../../src/parsers/instagram.ts";
 
 describe("parseThreadJson (instagram platform)", () => {
@@ -20,6 +20,36 @@ describe("parseThreadJson (instagram platform)", () => {
     });
     expect(parsed.messages[0]!.platform).toBe("instagram");
     expect(parsed.messages[1]!.sender).toBe("me");
+  });
+});
+
+describe("parseGroupThreadJson", () => {
+  it("preserves group and participant identity instead of folding everyone into them", () => {
+    const thread = {
+      title: "Project Chat",
+      participants: [
+        { name: "me_handle" },
+        { name: "Friend A" },
+        { name: "Friend B" },
+      ],
+      messages: [
+        { sender_name: "Friend A", timestamp_ms: 1700000000000, content: "ship?" },
+        { sender_name: "me_handle", timestamp_ms: 1700000001000, content: "soon" },
+        { sender_name: "Friend B", timestamp_ms: 1700000002000, photos: [{}] },
+      ],
+    };
+    const parsed = parseGroupThreadJson(thread, {
+      myName: "me_handle",
+      contactIdOverride: "project_chat",
+      platform: "instagram",
+    });
+    expect(parsed.groupName).toBe("Project Chat");
+    expect(parsed.groupId).toBe("project_chat");
+    expect(parsed.messages.length).toBe(3);
+    expect(parsed.messages[0]?.sender).toBe("participant");
+    expect(parsed.messages[0]?.participant_name).toBe("Friend A");
+    expect(parsed.messages[1]?.sender).toBe("me");
+    expect(parsed.messages[2]?.media_type).toBe("image");
   });
 });
 

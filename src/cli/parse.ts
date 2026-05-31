@@ -31,7 +31,7 @@ async function loadCustomPatterns(): Promise<CustomPattern[]> {
   }
 }
 
-const USAGE = `usage: bun run src/cli/parse.ts <platform> <export-path> --me "<my name>" [--aliases "alias1,alias2"] [--out exports/normalized/messages.jsonl] [--no-redact] [--include-groups]
+const USAGE = `usage: bun run src/cli/parse.ts <platform> <export-path> [--me "<my name>"] [--aliases "alias1,alias2"] [--out exports/normalized/messages.jsonl] [--no-redact] [--include-groups]
 
 platforms: messenger | instagram | wechat
 
@@ -39,16 +39,17 @@ examples:
   bun run src/cli/parse.ts messenger ./exports/raw/facebook --me "Your Name"
   bun run src/cli/parse.ts messenger ./exports/raw/fb --me "Your Name" --aliases "Nickname,中文名"
   bun run src/cli/parse.ts instagram ./exports/raw/instagram --me "your_ig_handle"
+  bun run src/cli/parse.ts wechat ./exports/raw/weflow/chatlab.json
   bun run src/cli/parse.ts wechat ./exports/raw/weflow/chatlab.json --me "Your WeChat Name" --aliases "wxid_xxx"`;
 
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2));
-  if (positional.length < 2 || !flags.me) {
+  if (positional.length < 2) {
     die(USAGE);
   }
   const platform = positional[0]!;
   const exportPath = positional[1]!;
-  const myName = String(flags.me);
+  const myName = flags.me ? String(flags.me) : "";
   const aliases = flags.aliases
     ? String(flags.aliases)
         .split(",")
@@ -60,6 +61,9 @@ async function main() {
 
   if (platform !== "messenger" && platform !== "instagram" && platform !== "wechat") {
     die(`unknown platform "${platform}". supported: messenger | instagram | wechat`);
+  }
+  if (platform !== "wechat" && !flags.me) {
+    die(`--me is required for ${platform} exports so sender_name can be mapped to "me"`);
   }
 
   process.stderr.write(`parsing ${platform} export at ${exportPath}...\n`);

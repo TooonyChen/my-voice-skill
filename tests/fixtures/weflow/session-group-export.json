@@ -1,0 +1,30 @@
+{
+  "weflow": {
+    "version": "1.0.0"
+  },
+  "session": {
+    "wxid": "wxid_group_session",
+    "nickname": "Session Group",
+    "remark": "",
+    "displayName": "Session Group",
+    "type": "群聊",
+    "lastTimestamp": 1738718000,
+    "messageCount": 1
+  },
+  "messages": [
+    {
+      "localId": 301,
+      "createTime": 1738718000,
+      "formattedTime": "2025-02-05 00:46:40",
+      "type": "文本消息",
+      "localType": 1,
+      "content": "群消息",
+      "isSend": false,
+      "senderUsername": "wxid_group_member",
+      "senderDisplayName": "Member",
+      "source": "group",
+      "senderAvatarKey": "",
+      "platformMessageId": "session_group_001"
+    }
+  ]
+}

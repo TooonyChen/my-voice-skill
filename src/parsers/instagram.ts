@@ -1,5 +1,6 @@
 import type { Message } from "../types/message.ts";
-import { parseMetaExport } from "./meta.ts";
+import type { GroupMessage } from "../types/group.ts";
+import { parseMetaExport, parseMetaGroupExport } from "./meta.ts";
 
 /**
  * Instagram DM parser. Instagram's Meta export uses the same per-thread JSON
@@ -22,6 +23,17 @@ export async function parseInstagramExport(
   myAliases: string[] = [],
 ): Promise<Message[]> {
   return parseMetaExport(exportRoot, myName, myAliases, {
+    platform: "instagram",
+    inboxCandidates: INSTAGRAM_INBOX_CANDIDATES,
+  });
+}
+
+export async function parseInstagramGroupExport(
+  exportRoot: string,
+  myName: string,
+  myAliases: string[] = [],
+): Promise<GroupMessage[]> {
+  return parseMetaGroupExport(exportRoot, myName, myAliases, {
     platform: "instagram",
     inboxCandidates: INSTAGRAM_INBOX_CANDIDATES,
   });

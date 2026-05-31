@@ -7,13 +7,18 @@ Phase 1 (stats) is deterministic and already done. You are running Phase 2: the 
 1. Run `bun run src/cli/check_freshness.ts stats`. If non-zero exit, stop and tell the user to run `/stats` first.
 2. Run `bun run src/cli/validate.ts global_stats exports/stats.json` and `bun run src/cli/validate.ts per_contact_stats exports/per_contact_stats.json`. If either fails, stop.
 3. Run `bun run src/cli/validate.ts classified_contacts exports/contacts_classified.json`. If fails, stop and tell the user to run `/classify-contacts` first.
+4. If `exports/normalized/group_messages.jsonl` exists, run `bun run src/cli/check_freshness.ts groups`. If non-zero, stop and tell the user to refresh the group side-channel commands.
 
 ## Input
 
 - `exports/stats.json` — global stats over "from me" messages
 - `exports/per_contact_stats.json` — per-contact stats (for register-table)
 - `exports/contacts_classified.json` — labels per contact
+- Optional: `exports/group_tone_stats.json` — public/group-register stats over the user's own group-chat messages only. If present, validate with `bun run src/cli/validate.ts group_tone_stats exports/group_tone_stats.json` before using it.
+- Optional: `exports/group_contexts.json` — deterministic group context summaries. If present, validate with `bun run src/cli/validate.ts group_contexts exports/group_contexts.json` before using it.
 - Samples: `bun run src/cli/sample.ts persona --mode persona --n 800`. This runs label-quota sampling, so high-volume labels (close_friend) do not drown out low-volume labels (work_hierarchy). The output at `exports/samples/persona_pool.json` is grouped by label; iterate by label when extracting register shifts.
+
+Group-chat data is a side channel. Use it only to compare private-register voice against public/group-register voice, such as shorter replies, more performative humor, or more restrained disclosure in groups. Do not let group-chat messages overwrite the private-message baseline.
 
 ## Output
 
@@ -138,6 +143,8 @@ Each don't must be backed by a count of zero (or near-zero) in the stats, OR by 
 ## Register table
 
 For each `RelationshipLabel` that appears in `contacts_classified.json` with ≥2 contacts, compute the per-register shifts using `per_contact_stats.json`. Each shift is a short string comparing to the global baseline.
+
+If `group_tone_stats.json` is present, add public/group-register observations inside relevant finding categories. Because the output schema only allows relationship labels in `register_locked`, keep group-register claims with `register_locked: null` and make the claim text explicitly say "in group/public chat". Anchor every such claim to `group_tone_stats.json`.
 
 Example for `intimate_partner` (one row in the `register_table` map):
 

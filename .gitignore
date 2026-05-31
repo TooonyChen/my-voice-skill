@@ -17,6 +17,7 @@ dist/
 
 # raw chat exports - personal data, never commit
 exports/
+wechat_*_texts/
 
 # runtime agent decision logs - personal data
 logs/

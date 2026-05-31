@@ -7,13 +7,17 @@ Run per contact. Extract structured relational findings that `memory_builder.md`
 1. Run `bun run src/cli/check_freshness.ts stats`. If non-zero, stop and tell the user to run `/stats` first.
 2. Run `bun run src/cli/validate.ts classified_contacts exports/contacts_classified.json`. If fails, stop.
 3. Confirm the target contact exists in the classified file.
+4. If `exports/normalized/group_messages.jsonl` exists, run `bun run src/cli/check_freshness.ts groups`. If non-zero, stop and tell the user to refresh the group side-channel commands.
 
 Input:
 
 - Contact metadata from `exports/contacts_classified.json`
 - Per-contact stats from `exports/per_contact_stats.json`
 - A sample from this contact: `bun run src/cli/sample.ts <contact_id> --mode classify --n 300 --sender all`
+- Optional shared context from `exports/group_contexts.json` and weak contact-level group signals from `exports/group_relationship_signals.json`. If either exists, validate it first with `bun run src/cli/validate.ts group_contexts ...` or `bun run src/cli/validate.ts group_relationship_signals ...`.
 - If the contact has more than 5,000 messages total, switch to `--mode memory` and run once per 6-month window (`--from`, `--to`), then merge per the chunking section below.
+
+Group-chat context is not private one-to-one evidence. Use it only for shared projects/events/background that the user and contact both plausibly share. Do not infer the contact's personality, sensitivities, or relationship intimacy from group-only evidence. When you use group context, mark it in the finding text as "group-context" or "shared group context".
 
 Output: `exports/memory_findings/{slug}.json`. The file must conform to `MemoryFindingsSchema` in `src/types/findings.ts`. The nine categories below are the body; they sit inside this root envelope:
 

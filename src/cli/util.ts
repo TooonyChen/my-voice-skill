@@ -1,6 +1,7 @@
 import { mkdir, writeFile, readFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import type { Message } from "../types/message.ts";
+import type { GroupMessage } from "../types/group.ts";
 
 export async function writeJson(path: string, data: unknown): Promise<void> {
   await mkdir(dirname(path), { recursive: true });
@@ -27,6 +28,23 @@ export async function writeJsonl<T>(path: string, items: Iterable<T>): Promise<n
 export async function readMessagesJsonl(path: string): Promise<Message[]> {
   const raw = await readFile(path, "utf-8");
   const out: Message[] = [];
+  for (const line of raw.split("\n")) {
+    if (!line.trim()) continue;
+    const obj = JSON.parse(line);
+    out.push({
+      ...obj,
+      timestamp: new Date(obj.timestamp),
+      reply_to_timestamp: obj.reply_to_timestamp
+        ? new Date(obj.reply_to_timestamp)
+        : null,
+    });
+  }
+  return out;
+}
+
+export async function readGroupMessagesJsonl(path: string): Promise<GroupMessage[]> {
+  const raw = await readFile(path, "utf-8");
+  const out: GroupMessage[] = [];
   for (const line of raw.split("\n")) {
     if (!line.trim()) continue;
     const obj = JSON.parse(line);

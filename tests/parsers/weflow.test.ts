@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import { join } from "node:path";
-import { parseWeFlowExport } from "../../src/parsers/weflow.ts";
+import {
+  parseWeFlowExport,
+  parseWeFlowGroupExport,
+} from "../../src/parsers/weflow.ts";
 
 const FIXTURE_ROOT = join(import.meta.dir, "..", "fixtures", "weflow");
 
@@ -52,6 +55,18 @@ describe("parseWeFlowExport — ChatLab JSON", () => {
     expect(messages[0]?.sender).toBe("them");
     expect(messages[1]?.sender).toBe("me");
   });
+
+  test("parses ChatLab groups into the group side channel", async () => {
+    const messages = await parseWeFlowGroupExport(
+      join(FIXTURE_ROOT, "group-chatlab.json"),
+      "Me",
+    );
+    expect(messages.length).toBe(2);
+    expect(messages.every((m) => m.group_id === "project@chatroom")).toBe(true);
+    expect(messages[0]?.sender).toBe("participant");
+    expect(messages[1]?.sender).toBe("me");
+    expect(messages[0]?.participant_id).toBe("wxid_coworker");
+  });
 });
 
 describe("parseWeFlowExport — raw WeFlow messages JSON", () => {
@@ -77,5 +92,51 @@ describe("parseWeFlowExport — raw WeFlow messages JSON", () => {
     expect(messages[2]?.reply_to_timestamp?.getTime()).toBe(
       new Date(1738716000 * 1000).getTime(),
     );
+  });
+
+  test("parses WeFlow text export JSON with session metadata and no my name", async () => {
+    const messages = await parseWeFlowExport(
+      join(FIXTURE_ROOT, "session-export.json"),
+      "",
+    );
+
+    expect(messages.length).toBe(3);
+    expect(messages.every((m) => m.contact_id === "wxid_session_friend")).toBe(true);
+    expect(messages.every((m) => m.contact_name === "Session Friend")).toBe(true);
+    expect(messages[0]?.sender).toBe("me");
+    expect(messages[1]?.sender).toBe("them");
+    expect(messages[2]?.media_type).toBe("voice");
+    expect(messages[2]?.text).toBeNull();
+  });
+
+  test("uses session.type to skip group text exports by default", async () => {
+    const messages = await parseWeFlowExport(
+      join(FIXTURE_ROOT, "session-group-export.json"),
+      "",
+    );
+    expect(messages).toEqual([]);
+  });
+
+  test("can include session-group text exports when requested", async () => {
+    const messages = await parseWeFlowExport(
+      join(FIXTURE_ROOT, "session-group-export.json"),
+      "",
+      [],
+      { includeGroups: true },
+    );
+    expect(messages.length).toBe(1);
+    expect(messages[0]?.contact_id).toBe("wxid_group_session");
+    expect(messages[0]?.contact_name).toBe("Session Group");
+  });
+
+  test("parses session-group text exports into the group side channel", async () => {
+    const messages = await parseWeFlowGroupExport(
+      join(FIXTURE_ROOT, "session-group-export.json"),
+      "",
+    );
+    expect(messages.length).toBe(1);
+    expect(messages[0]?.group_id).toBe("wxid_group_session");
+    expect(messages[0]?.participant_id).toBe("wxid_group_member");
+    expect(messages[0]?.participant_name).toBe("Member");
   });
 });

@@ -30,11 +30,16 @@ A third artifact, `memory/agent.md`, is user-authored. It encodes who the runtim
 [config.json]
    │
    │  /parse <platform> <path>  (src/cli/parse.ts → messages.jsonl, redacted)
+   │  /parse-groups <platform> <path>  (optional side channel → group_messages.jsonl, redacted)
    ▼
 [exports/normalized/messages.jsonl]
+   [exports/normalized/group_messages.jsonl]
    │
    │  /stats                    (src/cli/stats.ts → stats.json + per_contact_stats.json)
    │  /filter                   (src/cli/filter.ts → contacts_passed.json)
+   │  /group-stats              (src/cli/group_stats.ts → group_tone_stats.json)
+   │  /group-signals            (src/cli/group_signals.ts → group_relationship_signals.json)
+   │  /group-context            (src/cli/group_context.ts → group_contexts.json)
    ▼
 [stats.json] [contacts_passed.json]
    │
@@ -58,9 +63,13 @@ A third artifact, `memory/agent.md`, is user-authored. It encodes who the runtim
 | Command | What Claude does |
 |---|---|
 | `/init-voice` | Follow `prompts/intake.md`. Walks user through platform choice, export path, "who is me", threshold, time window, redaction, manual hints. Writes `config.json`. Supports `--resume`. |
-| `/parse <platform> <path>` | Invoke `bun run src/cli/parse.ts <platform> <path> --me "<my name>"`. Supported platforms: `messenger`, `instagram`, `wechat`. For WeFlow group JSON, add `--include-groups` only if the user explicitly wants groups imported as conversation-level contacts. Writes `exports/normalized/messages.jsonl`. |
+| `/parse <platform> <path>` | Invoke `bun run src/cli/parse.ts <platform> <path> [--me "<my name>"]`. Supported platforms: `messenger`, `instagram`, `wechat`. For `wechat`, `--me` is optional when WeFlow provides `isSend`; otherwise pass `--me`/`--aliases` so the parser can identify the user's side. Writes private/one-to-one messages to `exports/normalized/messages.jsonl`. |
+| `/parse-groups <platform> <path>` | Optional group side channel. Invoke `bun run src/cli/parse_groups.ts <platform> <path> [--me "<my name>"]`. Writes `exports/normalized/group_messages.jsonl` with `group_id`, `group_name`, and per-message participant identity. |
 | `/stats` | Invoke `bun run src/cli/stats.ts`. Writes `exports/stats.json` and `exports/per_contact_stats.json`. Required before any LLM-driven step. |
 | `/filter [--total N] [--each-way N]` | Invoke `bun run src/cli/filter.ts`. Writes `exports/contacts_passed.json`. |
+| `/group-stats` | Optional after `/parse-groups`. Invoke `bun run src/cli/group_stats.ts`. Writes `exports/group_tone_stats.json`, computed only from the user's group-chat messages for public/group register. |
+| `/group-signals` | Optional after `/parse-groups` and `/filter`. Invoke `bun run src/cli/group_signals.ts`. Writes `exports/group_relationship_signals.json`; these are weak classification signals only. |
+| `/group-context` | Optional after `/parse-groups`. Invoke `bun run src/cli/group_context.ts`. Writes `exports/group_contexts.json`, deterministic shared-context summaries by group. |
 | `/classify-contacts` | For each contact in `contacts_passed.json`, follow `prompts/relationship_classifier.md` using a sample from `bun run src/cli/sample.ts <contact_id>`. Output `exports/contacts_classified.json`. |
 | `/generate-tone` | Two-phase: (1) follow `prompts/persona_analyzer.md` using `stats.json` and samples from "me" messages across all classified contacts to produce `exports/persona_findings.json`. (2) follow `prompts/persona_builder.md` to template `memory/tone.md`. Preserves the `## Corrections` section if `tone.md` already exists. |
 | `/generate-memory <slug>` | For one contact: follow `prompts/memory_analyzer.md` then `prompts/memory_builder.md` to produce `memory/person/{slug}.md`. Preserves `## Manual notes` and `## Corrections` sections. |
@@ -87,7 +96,7 @@ src/                              ← TypeScript utilities invoked via `bun run`
   types/                          ← zod schemas (Message, ContactStats, GlobalStats, etc.)
   parsers/                        ← meta.ts (shared Meta JSON base), messenger.ts, instagram.ts, weflow.ts
   analyzers/                      ← tokenize.ts, normalize.ts, filter_contacts.ts, stats.ts
-  cli/                            ← parse.ts, stats.ts, filter.ts, sample.ts
+  cli/                            ← parse.ts, parse_groups.ts, stats.ts, group_stats.ts, group_signals.ts, group_context.ts, filter.ts, sample.ts
 docs/                             ← schemas for tone.md and person memory
 exports/                          ← gitignored; raw exports, normalized JSONL, stats JSON, samples
 memory/                           ← OUTPUT consumed by the runtime agent
@@ -110,6 +119,7 @@ tests/                            ← bun test
 - If sample data is too sparse for a section, leave it empty rather than fabricate.
 - Quote ≤30 characters per example to stay under fair-use intuition.
 - Labels with `label_source: manual_override` or `correction_override` are never re-classified by `/update`. They survive across runs verbatim.
+- Group-chat artifacts are side-channel inputs. They may support public/group register, weak relationship signals, and shared context, but must never be treated as private one-to-one evidence unless the prompt explicitly marks the evidence source as group chat.
 
 ## Runtime contract (out of scope for this skill, in scope for the consumer)
 

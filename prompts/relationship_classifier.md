@@ -7,6 +7,7 @@ Before any classification:
 1. Run `bun run src/cli/check_freshness.ts stats`. If the script exits non-zero, stop and tell the user to run `/stats` first. Do not proceed.
 2. Run `bun run src/cli/validate.ts global_stats exports/stats.json` and `bun run src/cli/validate.ts per_contact_stats exports/per_contact_stats.json`. If either fails, stop and report.
 3. If `exports/contacts_classified.json` already exists, load it. For any contact with `label_source` in `{"manual_override", "correction_override"}`, **skip re-classification and preserve the existing record verbatim** — even if the new run would compute a different label. This is the protection against /update silently reverting user corrections.
+4. If `exports/normalized/group_messages.jsonl` exists, run `bun run src/cli/check_freshness.ts groups`. If non-zero, stop and tell the user to refresh the group side-channel commands.
 
 For each remaining contact in `exports/contacts_passed.json`, classify the relationship into one of nine labels. Process contacts one at a time. Write the result to `exports/contacts_classified.json` as an array of objects matching the `ClassifiedContact` schema (see `src/types/contact.ts`).
 
@@ -55,6 +56,9 @@ For each contact:
 2. Run `bun run src/cli/sample.ts <contact_id> --mode classify --n 200`. This produces time-stratified samples across 5 equal time slices, ensuring register diversity even when activity clumps.
 3. Read the sample file produced at `exports/samples/<contact_id>.json`.
 4. Read `exports/per_contact_stats.json` and find this contact's stats.
+5. Optional: if `exports/group_relationship_signals.json` exists, validate it with `bun run src/cli/validate.ts group_relationship_signals exports/group_relationship_signals.json` and read only the signal matching this contact.
+
+Group signals are weak evidence. They can support labels like `work_peer`, `friend`, or `acquaintance` when private evidence is ambiguous, but they cannot alone establish `intimate_partner`, `family_close`, or `close_friend`. If a label depends mainly on group signals, cap confidence at 0.5 and include a signal with `type: "group_chat_weak_signal"`.
 
 ## Output schema (per contact)
 
