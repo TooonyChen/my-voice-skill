@@ -1,0 +1,138 @@
+{
+  "participants": [
+    { "name": "Sam Lee" },
+    { "name": "Min Park" }
+  ],
+  "messages": [
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777595400000,
+      "content": "made it home, talk tomorrow ❤️",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1777595100000,
+      "content": "goodnight love 💕",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777590000000,
+      "content": "missing you. wish you were here for dinner",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1777589700000,
+      "content": "i know, counting weeks 🥺",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777512000000,
+      "type": "Generic",
+      "photos": [{ "uri": "messages/inbox/min_park_abc123/photos/img_001.jpg", "creation_timestamp": 1777512000 }],
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777511700000,
+      "content": "got back to the office, miss this view",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1777510000000,
+      "type": "Generic",
+      "sticker": { "uri": "messages/stickers_used/sticker_001.png" },
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1777509000000,
+      "content": "wait you went bouldering without me?! 😤",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777417000000,
+      "content": "let's grab cafÃ© later this week when im back",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1777416000000,
+      "content": "yes please. somewhere quiet",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776945000000,
+      "content": "晚安",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1776944500000,
+      "content": "晚安 想你了",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776820000000,
+      "content": "love 我 confirm 一下 you free saturday?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1776819000000,
+      "content": "i am! what time",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776818000000,
+      "content": "around 8 ur time",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1776817500000,
+      "content": "perfect ❤️",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776700000000,
+      "content": "should be unsent",
+      "type": "Generic",
+      "is_unsent": true
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776600000000,
+      "content": "Sam Lee added something to the conversation.",
+      "type": "Subscribe",
+      "is_unsent": false
+    }
+  ],
+  "title": "Min Park",
+  "is_still_participant": true,
+  "thread_path": "inbox/min_park_abc123",
+  "magic_words": []
+}

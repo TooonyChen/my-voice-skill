@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+dist/
+
+# env
+.env
+.env.local
+.env.*.local
+
+# editor
+.DS_Store
+.vscode/
+.idea/
+
+# bun
+.bun/
+
+# raw chat exports - personal data, never commit
+exports/
+
+# runtime agent decision logs - personal data
+logs/
+
+# auto-generated voice fingerprint - personal data
+# (commit memory/agent.template.md only; the personalized
+#  memory/agent.md is gitignored along with all generated files)
+memory/agent.md
+memory/tone.md
+memory/person/*.md
+!memory/person/_index.md
+!memory/agent.template.md
+
+# misc
+*.log
+*.tmp
+
+# claude
+.claude/

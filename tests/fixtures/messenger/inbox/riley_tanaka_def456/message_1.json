@@ -1,0 +1,153 @@
+{
+  "participants": [
+    { "name": "Sam Lee" },
+    { "name": "Riley Tanaka" }
+  ],
+  "messages": [
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777600000000,
+      "content": "fuck I greased every move and still pumped out at the last hold lol",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777599000000,
+      "content": "skill issue mate",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777598000000,
+      "content": "says the guy who fell off the warm up",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777597000000,
+      "content": "lmaoo cmon man we agreed not to bring that up",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777596000000,
+      "content": "anyway sat 8am new gym?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777595800000,
+      "content": "in",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777590000000,
+      "type": "Generic",
+      "photos": [{ "uri": "messages/inbox/riley_tanaka_def456/photos/training_log.jpg", "creation_timestamp": 1777590000 }],
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777589000000,
+      "content": "wait that's actually a decent session",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777588000000,
+      "content": "you finally figured out the crimps?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777587000000,
+      "content": "kinda. still flagging out on steep stuff tho",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777500000000,
+      "content": "you see the new send video?",
+      "type": "Generic",
+      "share": { "link": "https://example.com/climbing-send" },
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777499000000,
+      "content": "ye man insane",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777400000000,
+      "content": "oi min back yet?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777399000000,
+      "content": "nah another 5 weeks. brutal",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1777398000000,
+      "content": "fuck thats rough. beers fri?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1777397000000,
+      "content": "yes pls",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1776900000000,
+      "content": "bro the new bouldering gym opened downtown",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776899000000,
+      "content": "saw that. comp wall?",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Riley Tanaka",
+      "timestamp_ms": 1776898000000,
+      "content": "yep and free entry for first month",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776897000000,
+      "content": "deal. weekend?",
+      "type": "Generic",
+      "is_unsent": false
+    }
+  ],
+  "title": "Riley Tanaka",
+  "is_still_participant": true,
+  "thread_path": "inbox/riley_tanaka_def456",
+  "magic_words": []
+}

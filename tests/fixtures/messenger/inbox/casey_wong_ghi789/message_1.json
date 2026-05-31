@@ -1,0 +1,47 @@
+{
+  "participants": [
+    { "name": "Sam Lee" },
+    { "name": "Casey Wong" }
+  ],
+  "messages": [
+    {
+      "sender_name": "Casey Wong",
+      "timestamp_ms": 1777000000000,
+      "content": "hey Sam, thanks for the resume tip the other day",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776999000000,
+      "content": "no worries, glad it helped",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Casey Wong",
+      "timestamp_ms": 1776998000000,
+      "content": "got the second round on Tuesday",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776997000000,
+      "content": "great. good luck",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Casey Wong",
+      "timestamp_ms": 1776996000000,
+      "content": "thanks!",
+      "type": "Generic",
+      "is_unsent": false
+    }
+  ],
+  "title": "Casey Wong",
+  "is_still_participant": true,
+  "thread_path": "inbox/casey_wong_ghi789",
+  "magic_words": []
+}

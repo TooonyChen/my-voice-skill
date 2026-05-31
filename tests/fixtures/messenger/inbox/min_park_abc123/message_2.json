@@ -1,0 +1,26 @@
+{
+  "participants": [
+    { "name": "Sam Lee" },
+    { "name": "Min Park" }
+  ],
+  "messages": [
+    {
+      "sender_name": "Sam Lee",
+      "timestamp_ms": 1776530000000,
+      "content": "yeah whats up love",
+      "type": "Generic",
+      "is_unsent": false
+    },
+    {
+      "sender_name": "Min Park",
+      "timestamp_ms": 1776529000000,
+      "content": "hey are you up?",
+      "type": "Generic",
+      "is_unsent": false
+    }
+  ],
+  "title": "Min Park",
+  "is_still_participant": true,
+  "thread_path": "inbox/min_park_abc123",
+  "magic_words": []
+}
