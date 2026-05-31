@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 import { stat, readFile } from "node:fs/promises";
 import { parseMessengerExport } from "../parsers/messenger.ts";
+import { parseInstagramExport } from "../parsers/instagram.ts";
 import { normalize } from "../analyzers/normalize.ts";
 import { CustomPatternSchema, type CustomPattern } from "../types/config.ts";
 import { z } from "zod";
@@ -34,7 +35,8 @@ platforms: messenger | instagram
 
 examples:
   bun run src/cli/parse.ts messenger ./exports/raw/facebook --me "Your Name"
-  bun run src/cli/parse.ts messenger ./exports/raw/fb --me "Your Name" --aliases "Nickname,中文名"`;
+  bun run src/cli/parse.ts messenger ./exports/raw/fb --me "Your Name" --aliases "Nickname,中文名"
+  bun run src/cli/parse.ts instagram ./exports/raw/instagram --me "your_ig_handle"`;
 
 async function main() {
   const { positional, flags } = parseArgs(process.argv.slice(2));
@@ -53,12 +55,15 @@ async function main() {
   const outPath = String(flags.out ?? "exports/normalized/messages.jsonl");
   const redactOn = flags["no-redact"] !== true;
 
-  if (platform !== "messenger") {
-    die(`platform "${platform}" not supported yet in v0.1. only messenger is wired.`);
+  if (platform !== "messenger" && platform !== "instagram") {
+    die(`unknown platform "${platform}". supported: messenger | instagram`);
   }
 
   process.stderr.write(`parsing ${platform} export at ${exportPath}...\n`);
-  let messages = await parseMessengerExport(exportPath, myName, aliases);
+  let messages =
+    platform === "instagram"
+      ? await parseInstagramExport(exportPath, myName, aliases)
+      : await parseMessengerExport(exportPath, myName, aliases);
   process.stderr.write(`parsed ${messages.length} messages.\n`);
 
   if (redactOn) {

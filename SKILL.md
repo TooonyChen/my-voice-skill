@@ -1,6 +1,6 @@
 ---
 name: my-voice
-description: Distill the user's language fingerprint and per-contact relational memory from exported chat history (Messenger first, Instagram TBD), so a runtime agent can reply on the user's behalf in the user's voice. Use when the user wants to (a) generate or refresh their `memory/tone.md` and `memory/person/*.md` files from chat exports, (b) classify contacts by relationship type, (c) apply corrections to the voice or per-contact memory, or (d) preview what the agent would draft for a given contact. Not for replying to messages directly; that lives in the runtime agent process which loads these memory files.
+description: Distill the user's language fingerprint and per-contact relational memory from exported chat history (Messenger and Instagram), so a runtime agent can reply on the user's behalf in the user's voice. Use when the user wants to (a) generate or refresh their `memory/tone.md` and `memory/person/*.md` files from chat exports, (b) classify contacts by relationship type, (c) apply corrections to the voice or per-contact memory, or (d) preview what the agent would draft for a given contact. Not for replying to messages directly; that lives in the runtime agent process which loads these memory files.
 ---
 
 # my-voice
@@ -85,7 +85,7 @@ prompts/                          ← LLM instruction files; Claude follows thes
   correction_handler.md
 src/                              ← TypeScript utilities invoked via `bun run`
   types/                          ← zod schemas (Message, ContactStats, GlobalStats, etc.)
-  parsers/                        ← messenger.ts (Meta JSON), instagram.ts (stub)
+  parsers/                        ← meta.ts (shared Meta JSON base), messenger.ts, instagram.ts
   analyzers/                      ← tokenize.ts, normalize.ts, filter_contacts.ts, stats.ts
   cli/                            ← parse.ts, stats.ts, filter.ts, sample.ts
 docs/                             ← schemas for tone.md and person memory

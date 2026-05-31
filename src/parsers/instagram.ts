@@ -1,16 +1,28 @@
 import type { Message } from "../types/message.ts";
+import { parseMetaExport } from "./meta.ts";
 
 /**
- * Instagram DM parser. Stubbed for v0.1; the Meta export shape for IG DMs is
- * structurally similar to Messenger's but participants and media fields differ.
- * Wire this once the messenger pipeline is validated end-to-end.
+ * Instagram DM parser. Instagram's Meta export uses the same per-thread JSON
+ * shape as Messenger (see meta.ts); it differs only in the inbox directory
+ * layout. Real conversations are split across `inbox/` and `message_requests/`,
+ * so both are scanned.
  */
+const INSTAGRAM_INBOX_CANDIDATES = [
+  "your_instagram_activity/messages/inbox",
+  "messages/inbox",
+  "inbox",
+  "your_instagram_activity/messages/message_requests",
+  "messages/message_requests",
+  "message_requests",
+];
+
 export async function parseInstagramExport(
-  _exportRoot: string,
-  _myName: string,
-  _myAliases: string[] = [],
+  exportRoot: string,
+  myName: string,
+  myAliases: string[] = [],
 ): Promise<Message[]> {
-  throw new Error(
-    "Instagram parser not implemented in v0.1. Use the messenger parser first; revisit IG after the pipeline is stable.",
-  );
+  return parseMetaExport(exportRoot, myName, myAliases, {
+    platform: "instagram",
+    inboxCandidates: INSTAGRAM_INBOX_CANDIDATES,
+  });
 }

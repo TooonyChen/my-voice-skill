@@ -35,7 +35,7 @@ SKILL.md             Slash commands + workflow Claude follows
 prompts/             8 LLM instruction files (intake, classifier, persona, memory, merger, correction)
 src/
   types/             Zod schemas (Message, ContactStats, GlobalStats, findings)
-  parsers/           Messenger (done), Instagram (stub)
+  parsers/           meta.ts (shared Meta JSON base), Messenger, Instagram
   analyzers/         tokenize (jieba), normalize (PII redaction), filter_contacts, stats, sampling
   cli/               parse, stats, filter, sample, validate, check_freshness, redact
 docs/                tone.md and person/*.md schemas

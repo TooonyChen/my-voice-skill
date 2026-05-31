@@ -8,14 +8,14 @@ Write the final result to `config.json` at the repo root. Do not invoke the data
 
 Ask: "Which platform export are we starting with? Messenger or Instagram?"
 
-- v0.1 only supports `messenger`. If the user says Instagram, tell them the parser is stubbed and ask if they want to proceed with Messenger first or stop.
+- Supported platforms are `messenger` and `instagram` (both parse Meta "Download Your Information" JSON exports). If the user has both, run the pipeline on one platform at a time.
 - Save as `platform: "messenger" | "instagram"`.
 
 ## Step 2 — export path
 
 Ask for the path to the unzipped Meta export.
 
-- Validate: the path must exist and contain (recursively) at least one of `inbox/`, `messages/inbox/`, or `your_facebook_activity/messages/inbox/`.
+- Validate: the path must exist and contain (recursively) at least one inbox directory. Messenger exports use `inbox/`, `messages/inbox/`, or `your_facebook_activity/messages/inbox/`; Instagram exports use `your_instagram_activity/messages/inbox/` (and often `.../message_requests/`).
 - If not found, ask the user to re-check. Common gotcha: Meta sometimes splits exports across multiple parts.
 - Save as `export_path` (absolute, resolved).
 
@@ -23,7 +23,7 @@ Ask for the path to the unzipped Meta export.
 
 Ask the user for their display name on the platform (the `sender_name` Meta uses). Then verify:
 
-- Run `bun run src/cli/parse.ts messenger <export_path> --me "<name>" --out /tmp/intake_check.jsonl 2>&1`.
+- Run `bun run src/cli/parse.ts <platform> <export_path> --me "<name>" --out /tmp/intake_check.jsonl 2>&1` (use the platform chosen in Step 1).
 - Read the first few lines and report the breakdown of distinct `sender_name`s found, plus how many messages each contributed.
 - If the user's name does not dominate at least one large thread, this is a red flag. Show the user the top senders by message count and confirm which one is them. Offer to add aliases (Chinese name, nickname).
 - Save as `my_name` and `my_aliases: string[]`.
@@ -65,7 +65,7 @@ Show the user the top 20 contacts by message count and ask if they want to pre-l
 
 Show the user the full `config.json` you intend to write. Ask for confirmation. Then write to `config.json` at the repo root.
 
-After writing, do NOT proceed to `/parse` automatically. Tell the user the next step is `/parse messenger <export_path>`.
+After writing, do NOT proceed to `/parse` automatically. Tell the user the next step is `/parse <platform> <export_path>` (using the platform from Step 1).
 
 ## Sampling priorities (saved into `config.json` as `sampling_weights`)
 
