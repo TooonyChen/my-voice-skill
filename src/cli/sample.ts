@@ -2,7 +2,12 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { ClassifiedContactSchema } from "../types/contact.ts";
-import { planPersonaQuota, timeStratifiedSample } from "../analyzers/sampling.ts";
+import {
+  buildContactSamplePlan,
+  DEFAULT_FULL_UNDER_CHARS,
+  planPersonaQuota,
+  timeStratifiedSample,
+} from "../analyzers/sampling.ts";
 import type { Message } from "../types/message.ts";
 import {
   die,
@@ -25,6 +30,9 @@ shared flags:
   --in PATH         messages.jsonl path (default exports/normalized/messages.jsonl)
   --sender ME|THEM|ALL  filter by sender (default ALL)
   --buckets N       time buckets for stratification (default 5)
+  --full-under-chars N
+                   classify/memory: output all messages when total text chars
+                   are at or below this threshold (default ${DEFAULT_FULL_UNDER_CHARS})
   --from ISO        only include messages on or after this date (memory mode)
   --to ISO          only include messages on or before this date (memory mode)
   --classified PATH path to contacts_classified.json (persona mode, default exports/contacts_classified.json)
@@ -87,6 +95,9 @@ async function runClassifyOrMemory(
     (flags.sender ? String(flags.sender) : "all").toLowerCase()
   ) as "me" | "them" | "all";
   const buckets = flags.buckets ? Number(flags.buckets) : 5;
+  const fullUnderChars = flags["full-under-chars"]
+    ? Number(flags["full-under-chars"])
+    : DEFAULT_FULL_UNDER_CHARS;
   const from = flags.from ? new Date(String(flags.from)) : null;
   const to = flags.to ? new Date(String(flags.to)) : null;
   const outPath = String(
@@ -100,19 +111,26 @@ async function runClassifyOrMemory(
       `no messages for contact_id=${contactId} (sender=${sender}${from || to ? `, window=${from?.toISOString() ?? "*"}..${to?.toISOString() ?? "*"}` : ""})`,
     );
   }
-  const sampled = timeStratifiedSample(pool, n, buckets);
+  const plan = buildContactSamplePlan(pool, {
+    n,
+    buckets,
+    fullUnderChars,
+  });
   await writeJson(outPath, {
     mode,
     contact_id: contactId,
     total_in_pool: pool.length,
-    sampled: sampled.length,
+    sampled: plan.sampled.length,
     buckets,
+    sample_strategy: plan.sample_strategy,
+    total_chars: plan.total_chars,
+    topic_profile: plan.topic_profile,
     sender_filter: sender,
     window: { from: from?.toISOString() ?? null, to: to?.toISOString() ?? null },
-    messages: sampled.map(toEntry),
+    messages: plan.sampled.map(toEntry),
   });
   process.stderr.write(
-    `[${mode}] sampled ${sampled.length} of ${pool.length} → ${outPath}\n`,
+    `[${mode}] sampled ${plan.sampled.length} of ${pool.length} (${plan.sample_strategy}) → ${outPath}\n`,
   );
 }
 

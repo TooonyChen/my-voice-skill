@@ -16,6 +16,29 @@ export type RelationshipLabel = z.infer<typeof RelationshipLabel>;
 export const SignalWeight = z.enum(["strong", "medium", "weak"]);
 export type SignalWeight = z.infer<typeof SignalWeight>;
 
+export const ContextTag = z.enum([
+  "gaming",
+  "work",
+  "tech",
+  "school",
+  "family",
+  "logistics",
+  "personal_life",
+  "group_chat",
+]);
+export type ContextTag = z.infer<typeof ContextTag>;
+
+export const RegisterTag = z.enum([
+  "gaming_banter",
+  "profanity_ok",
+  "casual_banter",
+  "formal",
+  "affectionate",
+  "vulnerable",
+  "practical_logistics",
+]);
+export type RegisterTag = z.infer<typeof RegisterTag>;
+
 export const ContactStatsSchema = z.object({
   contact_id: z.string(),
   contact_name: z.string(),
@@ -48,6 +71,8 @@ export const ClassifiedContactSchema = ContactStatsSchema.extend({
   confidence: z.number().min(0).max(1),
   label_source: LabelSource,
   label_source_note: z.string().nullable().optional(),
+  context_tags: z.array(ContextTag).default([]),
+  register_tags: z.array(RegisterTag).default([]),
   signals: z.array(ClassificationSignal),
   alt_labels: z.array(
     z.object({

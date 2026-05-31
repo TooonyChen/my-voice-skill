@@ -1,6 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
+  buildContactSamplePlan,
+  computeTopicProfile,
   planPersonaQuota,
+  topicAwareTimeStratifiedSample,
   timeStratifiedSample,
   uniformStride,
 } from "../../src/analyzers/sampling.ts";
@@ -77,6 +80,74 @@ describe("timeStratifiedSample", () => {
   });
 });
 
+describe("topic-aware contact sampling", () => {
+  test("returns full sample when total text is under the char threshold", () => {
+    const items = [
+      msg("small", new Date(0), "me", "rank later?"),
+      msg("small", new Date(1000), "them", "开黑"),
+      msg("small", new Date(2000), "me", "steam?"),
+    ];
+
+    const plan = buildContactSamplePlan(items, {
+      n: 1,
+      fullUnderChars: 30_000,
+    });
+
+    expect(plan.sample_strategy).toBe("full");
+    expect(plan.sampled.length).toBe(3);
+    expect(plan.total_chars).toBeGreaterThan(0);
+    expect(plan.topic_profile.gaming.message_count).toBe(3);
+  });
+
+  test("large contacts use topic-aware sampling with a topic profile", () => {
+    const items: Message[] = [];
+    for (let i = 0; i < 120; i++) {
+      items.push(
+        msg(
+          "large",
+          new Date(i * 1000),
+          "me",
+          i % 30 === 0 ? "ranked queue steam discord" : "x".repeat(400),
+        ),
+      );
+    }
+
+    const plan = buildContactSamplePlan(items, {
+      n: 20,
+      fullUnderChars: 1_000,
+    });
+
+    expect(plan.sample_strategy).toBe("topic_time_stratified");
+    expect(plan.sampled.length).toBeLessThanOrEqual(20);
+    expect(plan.topic_profile.gaming.message_count).toBeGreaterThan(0);
+  });
+
+  test("topic-aware sampling preserves sparse gaming evidence", () => {
+    const items: Message[] = [];
+    for (let i = 0; i < 100; i++) {
+      const text =
+        i >= 80 && i < 90 ? "开黑 rank steam queue" : `ordinary update ${i}`;
+      items.push(msg("gaming", new Date(i * 1000), "me", text));
+    }
+
+    const sampled = topicAwareTimeStratifiedSample(items, 20, 5);
+
+    expect(sampled.length).toBe(20);
+    expect(sampled.some((item) => item.text?.includes("开黑"))).toBe(true);
+  });
+
+  test("topic profile counts gaming terms deterministically", () => {
+    const profile = computeTopicProfile([
+      msg("gaming", new Date(0), "me", "开黑 rank steam"),
+      msg("gaming", new Date(1000), "them", "电脑 ip"),
+    ]);
+
+    expect(profile.gaming.message_count).toBe(1);
+    expect(profile.gaming.top_terms.map(([term]) => term)).toContain("开黑");
+    expect(profile.tech.message_count).toBe(1);
+  });
+});
+
 function classified(contact_id: string, label: ClassifiedContact["label"]): ClassifiedContact {
   return {
     contact_id,
@@ -91,6 +162,8 @@ function classified(contact_id: string, label: ClassifiedContact["label"]): Clas
     label,
     confidence: 0.8,
     label_source: "classifier",
+    context_tags: [],
+    register_tags: [],
     signals: [],
     alt_labels: [],
   };

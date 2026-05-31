@@ -17,13 +17,14 @@ import { die, parseArgs } from "./util.ts";
 
 const USAGE = `usage: bun run src/cli/validate.ts <schema> <path>
 
-schemas: persona_findings | memory_findings | classified_contacts | config | global_stats | per_contact_stats | group_tone_stats | group_relationship_signals | group_contexts
+schemas: persona_findings | memory_findings | classified_contact | classified_contacts | config | global_stats | per_contact_stats | group_tone_stats | group_relationship_signals | group_contexts
 
 Exits 0 on success and prints "ok: <schema>". Exits 1 with a JSON-formatted list of errors on failure.`;
 
 const SCHEMAS: Record<string, z.ZodTypeAny> = {
   persona_findings: PersonaFindingsSchema,
   memory_findings: MemoryFindingsSchema,
+  classified_contact: ClassifiedContactSchema,
   classified_contacts: z.array(ClassifiedContactSchema),
   config: SkillConfigSchema,
   global_stats: GlobalStatsSchema,

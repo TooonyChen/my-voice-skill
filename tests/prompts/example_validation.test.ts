@@ -152,4 +152,27 @@ describe("prompt examples must validate against their declared schemas", () => {
       expect(present).toContain(r);
     }
   });
+
+  test("relationship classifier example treats gaming profanity as register evidence", async () => {
+    const file = join(
+      import.meta.dir,
+      "..",
+      "..",
+      "prompts",
+      "relationship_classifier.md",
+    );
+    const text = await readFile(file, "utf-8");
+    const example = extractMarkedExamples(file, text).find(
+      (entry) => entry.schema === "classified_contacts",
+    );
+    expect(example).toBeDefined();
+
+    const parsed = z
+      .array(ClassifiedContactSchema)
+      .parse(JSON.parse(example!.json));
+    expect(parsed[0]?.label).toBe("friend");
+    expect(parsed[0]?.context_tags).toContain("gaming");
+    expect(parsed[0]?.register_tags).toContain("gaming_banter");
+    expect(parsed[0]?.register_tags).toContain("profanity_ok");
+  });
 });

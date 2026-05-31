@@ -12,6 +12,9 @@
     "parse-groups": "bun run src/cli/parse_groups.ts",
     "stats": "bun run src/cli/stats.ts",
     "filter": "bun run src/cli/filter.ts",
+    "classify-progress": "bun run src/cli/classify_progress.ts",
+    "classify-plan": "bun run src/cli/classify_plan.ts",
+    "classify-merge": "bun run src/cli/classify_merge.ts",
     "group-stats": "bun run src/cli/group_stats.ts",
     "group-signals": "bun run src/cli/group_signals.ts",
     "group-context": "bun run src/cli/group_context.ts"

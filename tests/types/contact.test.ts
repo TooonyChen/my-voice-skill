@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
   ClassifiedContactSchema,
+  ContextTag,
   LabelSource,
+  RegisterTag,
   slugify,
 } from "../../src/types/contact.ts";
 
@@ -28,6 +30,42 @@ describe("ClassifiedContact label_source", () => {
       label_source: "classifier",
     });
     expect(ok.success).toBe(true);
+  });
+
+  test("accepts explicit context and register tags", () => {
+    const ok = ClassifiedContactSchema.safeParse({
+      ...base,
+      label_source: "classifier",
+      context_tags: ["gaming", "tech"],
+      register_tags: ["gaming_banter", "profanity_ok"],
+    });
+    expect(ok.success).toBe(true);
+  });
+
+  test("defaults missing context and register tags for old files", () => {
+    const ok = ClassifiedContactSchema.parse({
+      ...base,
+      label_source: "classifier",
+    });
+    expect(ok.context_tags).toEqual([]);
+    expect(ok.register_tags).toEqual([]);
+  });
+
+  test("rejects unknown context or register tags", () => {
+    const badContext = ClassifiedContactSchema.safeParse({
+      ...base,
+      label_source: "classifier",
+      context_tags: ["game_friend"],
+      register_tags: [],
+    });
+    const badRegister = ClassifiedContactSchema.safeParse({
+      ...base,
+      label_source: "classifier",
+      context_tags: [],
+      register_tags: ["trash_talk"],
+    });
+    expect(badContext.success).toBe(false);
+    expect(badRegister.success).toBe(false);
   });
 
   test("accepts label_source = manual_override", () => {
@@ -64,6 +102,28 @@ describe("ClassifiedContact label_source", () => {
       "classifier",
       "manual_override",
       "correction_override",
+    ]);
+  });
+
+  test("tag enums match the supported classifier vocabulary", () => {
+    expect(ContextTag.options).toEqual([
+      "gaming",
+      "work",
+      "tech",
+      "school",
+      "family",
+      "logistics",
+      "personal_life",
+      "group_chat",
+    ]);
+    expect(RegisterTag.options).toEqual([
+      "gaming_banter",
+      "profanity_ok",
+      "casual_banter",
+      "formal",
+      "affectionate",
+      "vulnerable",
+      "practical_logistics",
     ]);
   });
 });
