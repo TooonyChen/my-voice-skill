@@ -1,0 +1,46 @@
+{
+  "chatlab": {
+    "version": "0.0.2",
+    "exportedAt": 1738715000,
+    "generator": "WeFlow"
+  },
+  "meta": {
+    "name": "项目群",
+    "platform": "wechat",
+    "type": "group",
+    "groupId": "project@chatroom",
+    "ownerId": "wxid_me"
+  },
+  "members": [
+    {
+      "platformId": "wxid_me",
+      "accountName": "Me",
+      "groupNickname": "我"
+    },
+    {
+      "platformId": "wxid_coworker",
+      "accountName": "同事",
+      "groupNickname": "产品"
+    }
+  ],
+  "messages": [
+    {
+      "platformMessageId": "group_001",
+      "sender": "wxid_coworker",
+      "accountName": "同事",
+      "groupNickname": "产品",
+      "timestamp": 1738714800,
+      "type": 0,
+      "content": "今天上线吗"
+    },
+    {
+      "platformMessageId": "group_002",
+      "sender": "wxid_me",
+      "accountName": "Me",
+      "groupNickname": "我",
+      "timestamp": 1738714860,
+      "type": 0,
+      "content": "先等回归结果"
+    }
+  ]
+}

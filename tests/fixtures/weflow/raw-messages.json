@@ -1,0 +1,41 @@
+{
+  "success": true,
+  "talker": "wxid_raw_friend",
+  "displayName": "Raw Friend",
+  "count": 3,
+  "hasMore": false,
+  "messages": [
+    {
+      "localId": 101,
+      "serverId": "raw_001",
+      "localType": 1,
+      "createTime": 1738716000,
+      "isSend": 1,
+      "senderUsername": "wxid_me",
+      "content": "我晚点到",
+      "rawContent": "我晚点到",
+      "parsedContent": "我晚点到"
+    },
+    {
+      "localId": 102,
+      "serverId": "raw_002",
+      "localType": 3,
+      "createTime": 1738716060,
+      "isSend": 0,
+      "senderUsername": "wxid_raw_friend",
+      "content": "[图片]",
+      "mediaType": "image"
+    },
+    {
+      "localId": 103,
+      "serverId": "raw_003",
+      "localType": 244813135921,
+      "createTime": 1738716120,
+      "isSend": 0,
+      "senderUsername": "wxid_raw_friend",
+      "content": "行",
+      "parsedContent": "行",
+      "replyToMessageId": "raw_001"
+    }
+  ]
+}

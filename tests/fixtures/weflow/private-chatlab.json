@@ -1,0 +1,66 @@
+{
+  "chatlab": {
+    "version": "0.0.2",
+    "exportedAt": 1738714000,
+    "generator": "WeFlow"
+  },
+  "meta": {
+    "name": "与小明的对话",
+    "platform": "wechat",
+    "type": "private",
+    "ownerId": "wxid_me"
+  },
+  "members": [
+    {
+      "platformId": "wxid_me",
+      "accountName": "Me"
+    },
+    {
+      "platformId": "wxid_friend",
+      "accountName": "小明"
+    }
+  ],
+  "messages": [
+    {
+      "platformMessageId": "msg_001",
+      "sender": "wxid_friend",
+      "accountName": "小明",
+      "timestamp": 1738713600,
+      "type": 0,
+      "content": "到家了吗"
+    },
+    {
+      "platformMessageId": "msg_002",
+      "sender": "wxid_me",
+      "accountName": "Me",
+      "timestamp": 1738713660,
+      "type": 0,
+      "content": "到了，刚洗完澡"
+    },
+    {
+      "platformMessageId": "msg_003",
+      "sender": "wxid_me",
+      "accountName": "Me",
+      "timestamp": 1738713670,
+      "type": 1,
+      "content": "[图片]"
+    },
+    {
+      "platformMessageId": "msg_004",
+      "sender": "wxid_friend",
+      "accountName": "小明",
+      "timestamp": 1738713720,
+      "type": 25,
+      "content": "那就好",
+      "replyToMessageId": "msg_002"
+    },
+    {
+      "platformMessageId": "msg_005",
+      "sender": "wxid_friend",
+      "accountName": "小明",
+      "timestamp": 1738713780,
+      "type": 80,
+      "content": "system event"
+    }
+  ]
+}

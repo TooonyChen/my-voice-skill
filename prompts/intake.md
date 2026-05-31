@@ -6,16 +6,20 @@ Write the final result to `config.json` at the repo root. Do not invoke the data
 
 ## Step 1 — platform
 
-Ask: "Which platform export are we starting with? Messenger or Instagram?"
+Ask: "Which platform export are we starting with? Messenger, Instagram, or WeChat via WeFlow JSON?"
 
-- Supported platforms are `messenger` and `instagram` (both parse Meta "Download Your Information" JSON exports). If the user has both, run the pipeline on one platform at a time.
-- Save as `platform: "messenger" | "instagram"`.
+- Supported platforms are `messenger`, `instagram`, and `wechat`.
+- `messenger` and `instagram` parse Meta "Download Your Information" JSON exports.
+- `wechat` parses static JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON is also accepted. This skill does not fetch WeFlow's API itself during `/parse`.
+- If the user has multiple platforms, run the pipeline on one platform at a time.
+- Save as `platform: "messenger" | "instagram" | "wechat"`.
 
 ## Step 2 — export path
 
-Ask for the path to the unzipped Meta export.
+Ask for the path to the unzipped Meta export or WeFlow JSON.
 
 - Validate: the path must exist and contain (recursively) at least one inbox directory. Messenger exports use `inbox/`, `messages/inbox/`, or `your_facebook_activity/messages/inbox/`; Instagram exports use `your_instagram_activity/messages/inbox/` (and often `.../message_requests/`).
+- For `wechat`, ask for a WeFlow JSON file or a directory containing WeFlow JSON files. Prefer ChatLab JSON. Group chats are skipped by default because the memory model is per contact; only use `--include-groups` later if the user explicitly wants groups imported as conversation-level contacts.
 - If not found, ask the user to re-check. Common gotcha: Meta sometimes splits exports across multiple parts.
 - Save as `export_path` (absolute, resolved).
 
@@ -25,7 +29,7 @@ Ask the user for their display name on the platform (the `sender_name` Meta uses
 
 - Run `bun run src/cli/parse.ts <platform> <export_path> --me "<name>" --out /tmp/intake_check.jsonl 2>&1` (use the platform chosen in Step 1).
 - Read the first few lines and report the breakdown of distinct `sender_name`s found, plus how many messages each contributed.
-- If the user's name does not dominate at least one large thread, this is a red flag. Show the user the top senders by message count and confirm which one is them. Offer to add aliases (Chinese name, nickname).
+- If the user's name does not dominate at least one large thread, this is a red flag. Show the user the top senders by message count and confirm which one is them. Offer to add aliases (Chinese name, nickname, WeChat ID such as `wxid_xxx`).
 - Save as `my_name` and `my_aliases: string[]`.
 
 ## Step 4 — threshold

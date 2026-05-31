@@ -16,8 +16,9 @@ chat export ─▶ this skill ─▶ memory/{tone.md, person/*.md} ─▶ runtim
 ```bash
 bun install
 bun test                                              
-# once you have a Meta export at <path>:
+# once you have a Meta export or static WeFlow JSON at <path>:
 bun run src/cli/parse.ts messenger <path> --me "Your Name"
+bun run src/cli/parse.ts wechat <path> --me "Your WeChat Name"
 bun run src/cli/stats.ts
 bun run src/cli/filter.ts                             # default ≥100 total, ≥50 each way
 # then in Claude Code with this skill loaded:
@@ -35,7 +36,7 @@ SKILL.md             Slash commands + workflow Claude follows
 prompts/             8 LLM instruction files (intake, classifier, persona, memory, merger, correction)
 src/
   types/             Zod schemas (Message, ContactStats, GlobalStats, findings)
-  parsers/           meta.ts (shared Meta JSON base), Messenger, Instagram
+  parsers/           meta.ts (shared Meta JSON base), Messenger, Instagram, WeFlow/ChatLab JSON
   analyzers/         tokenize (jieba), normalize (PII redaction), filter_contacts, stats, sampling
   cli/               parse, stats, filter, sample, validate, check_freshness, redact
 docs/                tone.md and person/*.md schemas
@@ -55,3 +56,9 @@ exports/             Gitignored. Raw exports, normalized JSONL, stats, samples.
 3. Register-aware. Tone shifts per relationship class are tracked explicitly.
 4. Manual notes and Corrections sections are preserved verbatim across every regeneration.
 5. The runtime is a proxy. It must not improvise the user's harder edges without explicit precedent. See `memory/agent.md` for the asymmetric-cost escalation policy.
+
+## WeChat via WeFlow
+
+WeChat support is a static import path for JSON exported by WeFlow. Prefer WeFlow's ChatLab JSON format; saved raw `/api/v1/messages` JSON is also accepted. Media payloads are not imported. Non-text media messages are retained only as message-type events with `text: null`, so they can count toward activity without entering LLM text samples.
+
+Group chats are skipped by default because the memory model is per contact. Pass `--include-groups` only if you intentionally want each group to be imported as one conversation-level contact.

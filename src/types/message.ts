@@ -18,7 +18,7 @@ export type MediaType = z.infer<typeof MediaType>;
 export const Sender = z.enum(["me", "them"]);
 export type Sender = z.infer<typeof Sender>;
 
-export const Platform = z.enum(["messenger", "instagram"]);
+export const Platform = z.enum(["messenger", "instagram", "wechat"]);
 export type Platform = z.infer<typeof Platform>;
 
 export const MessageSchema = z.object({
