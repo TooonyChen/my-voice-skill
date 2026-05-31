@@ -109,6 +109,19 @@ describe("parseWeFlowExport — raw WeFlow messages JSON", () => {
     expect(messages[2]?.text).toBeNull();
   });
 
+  test("strips embedded quoted context from raw WeFlow text exports", async () => {
+    const messages = await parseWeFlowExport(
+      join(FIXTURE_ROOT, "session-quoted-emoji.json"),
+      "",
+    );
+
+    expect(messages.length).toBe(2);
+    expect(messages[0]?.sender).toBe("me");
+    expect(messages[0]?.text).toBe("啥意思");
+    expect(messages[0]?.text).not.toContain("🍙");
+    expect(messages[1]?.text).toBeNull();
+  });
+
   test("uses session.type to skip group text exports by default", async () => {
     const messages = await parseWeFlowExport(
       join(FIXTURE_ROOT, "session-group-export.json"),

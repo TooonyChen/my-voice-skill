@@ -1,0 +1,44 @@
+{
+  "weflow": {
+    "version": "1.0.0"
+  },
+  "session": {
+    "wxid": "wxid_quoted_friend",
+    "nickname": "Quoted Friend",
+    "remark": "",
+    "displayName": "Quoted Friend",
+    "type": "私聊",
+    "lastTimestamp": 1738717200,
+    "messageCount": 2
+  },
+  "messages": [
+    {
+      "localId": 301,
+      "createTime": 1738717000,
+      "formattedTime": "2025-02-05 00:30:00",
+      "type": "文本消息",
+      "localType": 1,
+      "content": "啥意思[引用 TTanko🍙：我们跟傻逼一样]",
+      "isSend": true,
+      "senderUsername": "wxid_me",
+      "senderDisplayName": "Me",
+      "source": "private",
+      "senderAvatarKey": "",
+      "platformMessageId": "quoted_001"
+    },
+    {
+      "localId": 302,
+      "createTime": 1738717060,
+      "formattedTime": "2025-02-05 00:31:00",
+      "type": "文本消息",
+      "localType": 1,
+      "content": "[引用 TTanko🍙：[图片]]",
+      "isSend": true,
+      "senderUsername": "wxid_me",
+      "senderDisplayName": "Me",
+      "source": "private",
+      "senderAvatarKey": "",
+      "platformMessageId": "quoted_002"
+    }
+  ]
+}

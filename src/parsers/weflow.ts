@@ -93,8 +93,12 @@ function asString(value: unknown): string | undefined {
 }
 
 function contentToText(value: unknown): string | null {
-  if (typeof value === "string" && value.length > 0) return value;
-  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  if (typeof value === "string" && value.length > 0) {
+    return stripWeFlowQuoteContext(value);
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
   return null;
 }
 
@@ -104,6 +108,20 @@ function firstText(...values: unknown[]): string | null {
     if (text !== null) return text;
   }
   return null;
+}
+
+function stripWeFlowQuoteContext(text: string): string | null {
+  const markerIndex = text.lastIndexOf("[引用");
+  if (markerIndex === -1) return text;
+
+  const quoteContext = text.slice(markerIndex).trimEnd();
+  const looksLikeQuoteContext =
+    quoteContext.endsWith("]") &&
+    (quoteContext.includes("：") || quoteContext.includes(":"));
+  if (!looksLikeQuoteContext) return text;
+
+  const ownText = text.slice(0, markerIndex).trimEnd();
+  return ownText.length > 0 ? ownText : null;
 }
 
 function dateFromEpoch(value: string | number): Date {
