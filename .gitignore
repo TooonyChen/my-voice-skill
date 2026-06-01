@@ -37,3 +37,4 @@ memory/person/*.md
 
 # claude
 .claude/
+.alma-snapshots
